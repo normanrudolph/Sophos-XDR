@@ -1,0 +1,39 @@
+####
+Ports need to be added in:
+WHERE listening_ports.port NOT IN (
+
+#####
+
+SELECT
+    process_properties.sophos_pid,
+    users.username,
+    process_properties.path,
+    etc_protocols.alias AS protocol,
+    listening_ports.address,
+    listening_ports.port,
+    process_properties.local_rep,
+    process_properties.global_rep,
+    process_properties.pua_score,
+    process_properties.ml_score,
+    process_properties.sha256
+FROM listening_ports
+LEFT JOIN sophos_process_properties AS process_properties
+    ON listening_ports.pid = process_properties.pid
+LEFT JOIN processes
+    ON listening_ports.pid = processes.pid
+LEFT JOIN users
+    ON processes.uid = users.uid
+LEFT JOIN etc_protocols
+    ON listening_ports.protocol = etc_protocols.number
+WHERE listening_ports.port NOT IN (135,137,138,139,445,500,1900,4500)
+GROUP BY process_properties.sophos_pid,
+         users.username,
+         process_properties.path,
+         etc_protocols.alias,
+         listening_ports.address,
+         listening_ports.port,
+         process_properties.local_rep,
+         process_properties.global_rep,
+         process_properties.pua_score,
+         process_properties.ml_score,
+         process_properties.sha256
